@@ -85,10 +85,8 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
-const raceDir = 'race_results';
-const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
-
 const raceSelect = document.getElementById('raceSelect');
+const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
 let raceTable, champTable;
 
 /* ================= LOAD CSV ================= */
@@ -106,12 +104,11 @@ function loadCSV(file, tableId, tableVar) {
       const columns = header.map(col => ({ title: col, data: col }));
       const data = dataRows.map(r => {
         const obj = {};
-        header.forEach((col, i) => obj[col] = r[i] || '');
+        header.forEach((col,i) => obj[col] = r[i] || '');
         return obj;
       });
 
       if (tableVar) tableVar.destroy();
-
       $(`#${tableId} thead`).empty().append('<tr></tr>');
       columns.forEach(col =>
         $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`)
@@ -122,7 +119,7 @@ function loadCSV(file, tableId, tableVar) {
         columns: columns,
         paging: true,
         searching: true,
-        order: [[0, 'asc']]
+        order: [[0,'asc']]
       });
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -131,20 +128,15 @@ function loadCSV(file, tableId, tableVar) {
   });
 }
 
-/* ================= LOAD RACE LIST ================= */
+/* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
-  const response = await fetch(raceDir);
-  const html = await response.text();
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const response = await fetch('races.json'); // JSON que creaste en GitHub
+  const json = await response.json();
 
-  const files = [...doc.querySelectorAll('a')]
-    .map(a => a.getAttribute('href'))
-    .filter(h => h.endsWith('.csv'));
-
-  files.forEach(file => {
+  json.race_results.forEach(file => {
     const opt = document.createElement('option');
-    opt.value = `${raceDir}/${file}`;
-    opt.textContent = file.replace('.csv','');
+    opt.value = file;
+    opt.textContent = file.split('/').pop().replace('.csv','');
     raceSelect.appendChild(opt);
   });
 
@@ -154,9 +146,7 @@ async function loadRaceList() {
 }
 
 /* ================= EVENTS ================= */
-raceSelect.addEventListener('change', () =>
-  loadCSV(raceSelect.value, 'raceTable', raceTable)
-);
+raceSelect.addEventListener('change', () => loadCSV(raceSelect.value, 'raceTable', raceTable));
 
 /* ================= INIT ================= */
 loadRaceList();
