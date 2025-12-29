@@ -47,15 +47,6 @@
       margin-left: 10px;
       padding: 5px;
     }
-
-    /* Estilo para mensaje cuando no hay datos */
-    .empty-message {
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.1rem;
-      color: #333;
-      padding: 20px 0;
-    }
   </style>
 </head>
 
@@ -98,14 +89,6 @@ const raceSelect = document.getElementById('raceSelect');
 const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
 let raceTable, champTable;
 
-/* ================= SHOW EMPTY MESSAGE ================= */
-function showEmptyMessage(tableId, message) {
-  $(`#${tableId} thead`).empty();
-  $(`#${tableId} tbody`).empty().append(
-    `<tr><td colspan="10" class="empty-message">${message}</td></tr>`
-  );
-}
-
 /* ================= LOAD CSV ================= */
 function loadCSV(file, tableId, tableVar) {
   Papa.parse(file, {
@@ -113,18 +96,10 @@ function loadCSV(file, tableId, tableVar) {
     skipEmptyLines: true,
     complete: function(results) {
       const rows = results.data;
-      if (rows.length < 2) {
-        showEmptyMessage(tableId, "Los resultados se actualizarán pronto. ¡Vuelve más tarde!");
-        return;
-      }
+      if (rows.length < 2) return;
 
       const header = rows[1];
       const dataRows = rows.slice(2);
-
-      if (dataRows.length === 0) {
-        showEmptyMessage(tableId, "Los resultados se actualizarán pronto. ¡Vuelve más tarde!");
-        return;
-      }
 
       const columns = header.map(col => ({ title: col, data: col }));
       const data = dataRows.map(r => {
@@ -155,28 +130,18 @@ function loadCSV(file, tableId, tableVar) {
 
 /* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
-  try {
-    const response = await fetch('races.json');
-    if (!response.ok) throw new Error("JSON no encontrado o vacío");
-    const json = await response.json();
+  const response = await fetch('races.json'); // JSON que creaste en GitHub
+  const json = await response.json();
 
-    if (!json.race_results || json.race_results.length === 0) {
-      showEmptyMessage('raceTable', "Los resultados se actualizarán pronto. ¡Vuelve más tarde!");
-      return;
-    }
+  json.race_results.forEach(file => {
+    const opt = document.createElement('option');
+    opt.value = file;
+    opt.textContent = file.split('/').pop().replace('.csv','');
+    raceSelect.appendChild(opt);
+  });
 
-    json.race_results.forEach(file => {
-      const opt = document.createElement('option');
-      opt.value = file;
-      opt.textContent = file.split('/').pop().replace('.csv','');
-      raceSelect.appendChild(opt);
-    });
-
-    if (raceSelect.options.length > 0) {
-      loadCSV(raceSelect.value, 'raceTable', null);
-    }
-  } catch (e) {
-    showEmptyMessage('raceTable', "Los resultados se actualizarán pronto. ¡Vuelve más tarde!");
+  if (raceSelect.options.length > 0) {
+    loadCSV(raceSelect.value, 'raceTable', null);
   }
 }
 
@@ -185,7 +150,7 @@ raceSelect.addEventListener('change', () => loadCSV(raceSelect.value, 'raceTable
 
 /* ================= INIT ================= */
 loadRaceList();
-loadCSV(championshipCSV, 'champTable', champTable);
+loadCSV(championshipCSV, 'champTable', null);
 </script>
 
 </body>
