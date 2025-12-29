@@ -1,8 +1,10 @@
 {
   "race_results": [
-    ""
+    "race_results/Monza_2020_2025-12-24_21-58.csv",
+    "race_results/Monza_2020_2025-12-24_22-22.csv",
+    "race_results/Monza_2020_2025-12-27_18-50.csv"
   ],
   "season_results": [
-    ""
+    "season_results/championship_GT3_Season_2025.csv"
   ]
 }
