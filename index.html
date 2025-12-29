@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>/// GT3 Gen2 Racing Series Standings ///</title>
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-image: url("Audi_R8_LMS_GT3_evo_II.jpg");
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .section {
+      margin-top: 40px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    select {
+      margin-left: 10px;
+      padding: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+<h1>/// GT3 Gen2 Racing Series Standings ///</h1>
+
+<!-- ================= RACES ================= -->
+<div class="section">
+  <h2>Race Results</h2>
+  <label for="raceSelect">Select event:</label>
+  <select id="raceSelect"></select>
+
+  <table id="raceTable" class="display">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- ================= CHAMPIONSHIP ================= -->
+<div class="section">
+  <h2>Championship Standings</h2>
+
+  <table id="champTable" class="display">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+const raceDir = 'race_results';
+const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
+
+const raceSelect = document.getElementById('raceSelect');
+let raceTable, champTable;
+
+/* ================= LOAD CSV ================= */
+function loadCSV(file, tableId, tableVar) {
+  Papa.parse(file, {
+    download: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      const rows = results.data;
+      if (rows.length < 2) return;
+
+      const header = rows[1];
+      const dataRows = rows.slice(2);
+
+      const columns = header.map(col => ({ title: col, data: col }));
+      const data = dataRows.map(r => {
+        const obj = {};
+        header.forEach((col, i) => obj[col] = r[i] || '');
+        return obj;
+      });
+
+      if (tableVar) tableVar.destroy();
+
+      $(`#${tableId} thead`).empty().append('<tr></tr>');
+      columns.forEach(col =>
+        $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`)
+      );
+
+      tableVar = $(`#${tableId}`).DataTable({
+        data: data,
+        columns: columns,
+        paging: true,
+        searching: true,
+        order: [[0, 'asc']]
+      });
+
+      if (tableId === 'raceTable') raceTable = tableVar;
+      else champTable = tableVar;
+    }
+  });
+}
+
+/* ================= LOAD RACE LIST ================= */
+async function loadRaceList() {
+  const response = await fetch(raceDir);
+  const html = await response.text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  const files = [...doc.querySelectorAll('a')]
+    .map(a => a.getAttribute('href'))
+    .filter(h => h.endsWith('.csv'));
+
+  files.forEach(file => {
+    const opt = document.createElement('option');
+    opt.value = `${raceDir}/${file}`;
+    opt.textContent = file.replace('.csv','');
+    raceSelect.appendChild(opt);
+  });
+
+  if (raceSelect.options.length > 0) {
+    loadCSV(raceSelect.value, 'raceTable', null);
+  }
+}
+
+/* ================= EVENTS ================= */
+raceSelect.addEventListener('change', () =>
+  loadCSV(raceSelect.value, 'raceTable', raceTable)
+);
+
+/* ================= INIT ================= */
+loadRaceList();
+loadCSV(championshipCSV, 'champTable', null);
+</script>
+
+</body>
+</html>
