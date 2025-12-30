@@ -89,14 +89,9 @@ const raceSelect = document.getElementById('raceSelect');
 const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
 let raceTable, champTable;
 
-// Función para añadir cache-buster a cualquier URL
-function cacheBust(url) {
-  return `${url}?v=${new Date().getTime()}`;
-}
-
 /* ================= LOAD CSV ================= */
 function loadCSV(file, tableId, tableVar) {
-  Papa.parse(cacheBust(file), { // <-- Cache-buster aplicado
+  Papa.parse(file, {
     download: true,
     skipEmptyLines: true,
     complete: function(results) {
@@ -107,9 +102,14 @@ function loadCSV(file, tableId, tableVar) {
       const dataRows = rows.slice(2);
 
       const columns = header.map(col => ({ title: col, data: col }));
+
       const data = dataRows.map(r => {
         const obj = {};
-        header.forEach((col,i) => obj[col] = r[i] || '');
+        header.forEach((col,i) => {
+          obj[col] = r[i] || '';
+          // forzar Position como string para que DNF no rompa DataTables
+          if (col === "Position" && obj[col] === "DNF") obj[col] = "DNF";
+        });
         return obj;
       });
 
@@ -124,7 +124,11 @@ function loadCSV(file, tableId, tableVar) {
         columns: columns,
         paging: true,
         searching: true,
-        order: [[0,'asc']]
+        order: [[0,'asc']],
+        columnDefs: [{
+          targets: 0, // columna Position
+          type: 'string' // tratar como texto para DNF
+        }]
       });
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -135,7 +139,7 @@ function loadCSV(file, tableId, tableVar) {
 
 /* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
-  const response = await fetch(cacheBust('races.json')); // <-- Cache-buster aplicado
+  const response = await fetch('races.json'); // JSON que creaste en GitHub
   const json = await response.json();
 
   json.race_results.forEach(file => {
@@ -146,7 +150,7 @@ async function loadRaceList() {
   });
 
   if (raceSelect.options.length > 0) {
-    loadCSV(raceSelect.value, 'raceTable', null);
+    loadCSV(raceSelect.value, 'raceTable', raceTable);
   }
 }
 
@@ -155,7 +159,7 @@ raceSelect.addEventListener('change', () => loadCSV(raceSelect.value, 'raceTable
 
 /* ================= INIT ================= */
 loadRaceList();
-loadCSV(championshipCSV, 'champTable', null);
+loadCSV(championshipCSV, 'champTable', champTable);
 </script>
 
 </body>
