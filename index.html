@@ -16,7 +16,9 @@
       background-attachment: fixed;
     }
 
-    h1, h2 { text-align: center; }
+    h1, h2 {
+      text-align: center;
+    }
 
     .page {
       min-height: 100vh;
@@ -24,7 +26,10 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
-    table { width: 100%; margin-top: 20px; }
+    table {
+      width: 100%;
+      margin-top: 20px;
+    }
 
     .section {
       margin-top: 40px;
@@ -34,17 +39,24 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
 
-    label { font-weight: bold; }
+    label {
+      font-weight: bold;
+    }
 
-    select { margin-left: 10px; padding: 5px; }
+    select {
+      margin-left: 10px;
+      padding: 5px;
+    }
   </style>
 </head>
 
 <body>
+
 <div class="page">
 
 <h1>/// GT3 Gen2 Racing Series Standings ///</h1>
 
+<!-- ================= RACES ================= -->
 <div class="section">
   <h2>Race Results</h2>
   <label for="raceSelect">Select event:</label>
@@ -56,8 +68,10 @@
   </table>
 </div>
 
+<!-- ================= CHAMPIONSHIP ================= -->
 <div class="section">
   <h2>Championship Standings</h2>
+
   <table id="champTable" class="display">
     <thead></thead>
     <tbody></tbody>
@@ -81,11 +95,11 @@ function loadCSV(file, tableId, tableVar) {
     download: true,
     skipEmptyLines: true,
     complete: function(results) {
-      let rows = results.data;
+      const rows = results.data;
       if (!rows || rows.length < 2) return;
 
-      // Buscar fila de header real (que empiece con "Position")
-      const headerIndex = rows.findIndex(r => r[0] && r[0].toLowerCase() === "position");
+      // Buscar fila real de header (Position,...)
+      const headerIndex = rows.findIndex(r => r[0] && r[0].trim().toLowerCase() === "position");
       if (headerIndex === -1) return;
 
       const header = rows[headerIndex];
@@ -107,13 +121,11 @@ function loadCSV(file, tableId, tableVar) {
         columns: columns,
         paging: true,
         searching: true,
-        // Orden: considera DNF como mayor que cualquier número
         order: [[0,'asc']],
         columnDefs: [{
           targets: 0,
-          type: 'string',
           render: function(data, type, row) {
-            if(data === 'DNF') return '99999'; // DNF va al final
+            if (type === 'sort') return data === 'DNF' ? 99999 : data;
             return data;
           }
         }]
