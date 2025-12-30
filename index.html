@@ -89,9 +89,14 @@ const raceSelect = document.getElementById('raceSelect');
 const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
 let raceTable, champTable;
 
+// Función para añadir cache-buster a cualquier URL
+function cacheBust(url) {
+  return `${url}?v=${new Date().getTime()}`;
+}
+
 /* ================= LOAD CSV ================= */
 function loadCSV(file, tableId, tableVar) {
-  Papa.parse(file, {
+  Papa.parse(cacheBust(file), { // <-- Cache-buster aplicado
     download: true,
     skipEmptyLines: true,
     complete: function(results) {
@@ -130,7 +135,7 @@ function loadCSV(file, tableId, tableVar) {
 
 /* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
-  const response = await fetch('races.json'); // JSON que creaste en GitHub
+  const response = await fetch(cacheBust('races.json')); // <-- Cache-buster aplicado
   const json = await response.json();
 
   json.race_results.forEach(file => {
