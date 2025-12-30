@@ -98,36 +98,15 @@ function loadCSV(file, tableId, tableVar) {
       const rows = results.data;
       if (rows.length < 2) return;
 
-      // Encontrar la fila que contiene 'Position'
-      let headerIndex = rows.findIndex(r => r.includes('Position'));
-      if (headerIndex === -1) {
-        console.error('Header "Position" no encontrado en CSV');
-        return;
-      }
-
-      const header = rows[headerIndex];
-      const dataRows = rows.slice(headerIndex + 1);
-
-      // Transformar datos y convertir 'DNF' a 999 solo para ordenar
-      const data = dataRows.map(r => {
-        const obj = {};
-        header.forEach((col,i) => {
-          obj[col] = r[i] || '';
-        });
-
-        // Para ordenar Position, DNF = 999
-        obj._PositionOrder = (obj['Position'] === 'DNF' || obj['Position'] === '') ? 999 : parseInt(obj['Position']);
-        return obj;
-      });
+      const header = rows[1];
+      const dataRows = rows.slice(2);
 
       const columns = header.map(col => ({ title: col, data: col }));
-      const columnDefs = [{
-        targets: header.indexOf('Position'),
-        render: function(data, type, row) {
-          if (type === 'sort') return row._PositionOrder;
-          return data;
-        }
-      }];
+      const data = dataRows.map(r => {
+        const obj = {};
+        header.forEach((col,i) => obj[col] = r[i] || '');
+        return obj;
+      });
 
       if (tableVar) tableVar.destroy();
       $(`#${tableId} thead`).empty().append('<tr></tr>');
@@ -138,7 +117,6 @@ function loadCSV(file, tableId, tableVar) {
       tableVar = $(`#${tableId}`).DataTable({
         data: data,
         columns: columns,
-        columnDefs: columnDefs,
         paging: true,
         searching: true,
         order: [[0,'asc']]
@@ -152,7 +130,7 @@ function loadCSV(file, tableId, tableVar) {
 
 /* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
-  const response = await fetch('races.json');
+  const response = await fetch('races.json'); // JSON que creaste en GitHub
   const json = await response.json();
 
   json.race_results.forEach(file => {
