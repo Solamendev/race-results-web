@@ -101,12 +101,14 @@ function loadCSV(file, tableId, tableVar) {
       const header = rows[1];
       const dataRows = rows.slice(2);
 
-      // Creamos la columna interna de orden para Position
+      // Generar columnas y datos
       const columns = header.map(col => {
-        if(col === "Position") return [
-          { title: col, data: col },
-          { title: col+'_sort', data: col+'_sort', visible: false }
-        ];
+        if(col === "Position") {
+          return [
+            { title: col, data: col },
+            { title: col+'_sort', data: col+'_sort', visible: false }
+          ];
+        }
         return { title: col, data: col };
       }).flat();
 
@@ -115,7 +117,6 @@ function loadCSV(file, tableId, tableVar) {
         header.forEach((col,i) => {
           obj[col] = r[i] || '';
           if(col === "Position") {
-            // Valor numérico para ordenar
             obj[col+'_sort'] = (r[i] && r[i] !== 'DNF') ? parseInt(r[i]) : 999;
           }
         });
@@ -124,16 +125,14 @@ function loadCSV(file, tableId, tableVar) {
 
       if (tableVar) tableVar.destroy();
       $(`#${tableId} thead`).empty().append('<tr></tr>');
-      columns.forEach(col =>
-        $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`)
-      );
+      columns.forEach(col => $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`));
 
       tableVar = $(`#${tableId}`).DataTable({
         data: data,
         columns: columns,
         paging: true,
         searching: true,
-        order: [[header.indexOf('Position')+1,'asc']] // Ordenar por columna interna sort
+        order: [[columns.findIndex(c => c.data === 'Position_sort'),'asc']]
       });
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -144,7 +143,7 @@ function loadCSV(file, tableId, tableVar) {
 
 /* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
-  const response = await fetch('races.json'); // JSON que creaste en GitHub
+  const response = await fetch('races.json');
   const json = await response.json();
 
   json.race_results.forEach(file => {
