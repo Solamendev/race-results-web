@@ -96,39 +96,52 @@ function loadCSV(file, tableId, tableVar) {
     skipEmptyLines: true,
     complete: function(results) {
       const rows = results.data;
-      if (!rows || rows.length < 2) return;
+      if (rows.length < 2) return;
 
-      // Buscar fila real de header (Position,...)
-      const headerIndex = rows.findIndex(r => r[0] && r[0].trim().toLowerCase() === "position");
-      if (headerIndex === -1) return;
+      // Encontrar la fila que contiene 'Position'
+      let headerIndex = rows.findIndex(r => r.includes('Position'));
+      if (headerIndex === -1) {
+        console.error('Header "Position" no encontrado en CSV');
+        return;
+      }
 
       const header = rows[headerIndex];
       const dataRows = rows.slice(headerIndex + 1);
 
-      const columns = header.map(col => ({ title: col, data: col }));
+      // Transformar datos y convertir 'DNF' a 999 solo para ordenar
       const data = dataRows.map(r => {
         const obj = {};
-        header.forEach((col,i) => obj[col] = r[i] || '');
+        header.forEach((col,i) => {
+          obj[col] = r[i] || '';
+        });
+
+        // Para ordenar Position, DNF = 999
+        obj._PositionOrder = (obj['Position'] === 'DNF' || obj['Position'] === '') ? 999 : parseInt(obj['Position']);
         return obj;
       });
 
+      const columns = header.map(col => ({ title: col, data: col }));
+      const columnDefs = [{
+        targets: header.indexOf('Position'),
+        render: function(data, type, row) {
+          if (type === 'sort') return row._PositionOrder;
+          return data;
+        }
+      }];
+
       if (tableVar) tableVar.destroy();
       $(`#${tableId} thead`).empty().append('<tr></tr>');
-      columns.forEach(col => $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`));
+      columns.forEach(col =>
+        $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`)
+      );
 
       tableVar = $(`#${tableId}`).DataTable({
         data: data,
         columns: columns,
+        columnDefs: columnDefs,
         paging: true,
         searching: true,
-        order: [[0,'asc']],
-        columnDefs: [{
-          targets: 0,
-          render: function(data, type, row) {
-            if (type === 'sort') return data === 'DNF' ? 99999 : data;
-            return data;
-          }
-        }]
+        order: [[0,'asc']]
       });
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -149,7 +162,9 @@ async function loadRaceList() {
     raceSelect.appendChild(opt);
   });
 
-  if (raceSelect.options.length > 0) loadCSV(raceSelect.value, 'raceTable', null);
+  if (raceSelect.options.length > 0) {
+    loadCSV(raceSelect.value, 'raceTable', null);
+  }
 }
 
 /* ================= EVENTS ================= */
