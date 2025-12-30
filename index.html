@@ -101,24 +101,10 @@ function loadCSV(file, tableId, tableVar) {
       const header = rows[1];
       const dataRows = rows.slice(2);
 
-      // Creamos la columna interna de orden para Position
-      const columns = header.map(col => {
-        if(col === "Position") return [
-          { title: col, data: col },
-          { title: col+'_sort', data: col+'_sort', visible: false }
-        ];
-        return { title: col, data: col };
-      }).flat();
-
+      const columns = header.map(col => ({ title: col, data: col }));
       const data = dataRows.map(r => {
         const obj = {};
-        header.forEach((col,i) => {
-          obj[col] = r[i] || '';
-          if(col === "Position") {
-            // Valor numérico para ordenar
-            obj[col+'_sort'] = (r[i] && r[i] !== 'DNF') ? parseInt(r[i]) : 999;
-          }
-        });
+        header.forEach((col,i) => obj[col] = r[i] || '');
         return obj;
       });
 
@@ -133,7 +119,7 @@ function loadCSV(file, tableId, tableVar) {
         columns: columns,
         paging: true,
         searching: true,
-        order: [[header.indexOf('Position')+1,'asc']] // Ordenar por columna interna sort
+        order: [[0,'asc']]
       });
 
       if (tableId === 'raceTable') raceTable = tableVar;
