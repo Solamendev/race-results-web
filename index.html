@@ -30,7 +30,6 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
-    /* ✅ SCROLL HORIZONTAL CORRECTO */
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -85,6 +84,21 @@
         width: 100%;
         margin: 5px 0;
       }
+    }
+
+    /* ===== DataTables visual tweaks ===== */
+    table.dataTable th,
+    table.dataTable td {
+      vertical-align: middle;
+    }
+
+    table.dataTable td:first-child {
+      font-weight: bold;
+    }
+
+    table.dataTable td:last-child {
+      font-weight: bold;
+      color: #c00;
     }
   </style>
 </head>
@@ -179,10 +193,22 @@ function loadCSV(file, tableId, tableVar) {
         responsive: true,
         scrollX: true,
         autoWidth: false,
+        columnDefs: [
+          // SIEMPRE visibles en móvil
+          { targets: 0, responsivePriority: 1 }, // Position
+          { targets: 1, responsivePriority: 1 }, // Driver
+          { targets: 9, responsivePriority: 1 }, // Gap
+          { targets: 14, responsivePriority: 1 }, // Points
+
+          // Prioridad media
+          { targets: [3, 8], responsivePriority: 3 },
+
+          // Baja prioridad
+          { targets: '_all', responsivePriority: 10 }
+        ],
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
 
-      // 🔧 CLAVE: sincroniza cabecera y cuerpo
       tableVar.columns.adjust().responsive.recalc();
 
       if (tableId === 'raceTable') raceTable = tableVar;
