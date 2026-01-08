@@ -30,7 +30,6 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
-    /* ✅ SCROLL HORIZONTAL CORRECTO */
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -53,14 +52,12 @@
       padding: 5px;
     }
 
-    /* ===== DESKTOP ONLY ===== */
     @media (min-width: 769px) {
       body {
         background-attachment: fixed;
       }
     }
 
-    /* ===== MOBILE ===== */
     @media (max-width: 768px) {
       .page {
         padding: 10px;
@@ -95,7 +92,6 @@
 
 <h1>/// GT3 Gen2 Racing Series Standings ///</h1>
 
-<!-- ================= RACES ================= -->
 <div class="section">
   <h2>Race Results</h2>
   <label for="raceSelect">Select event:</label>
@@ -109,7 +105,6 @@
   </div>
 </div>
 
-<!-- ================= CHAMPIONSHIP ================= -->
 <div class="section">
   <h2>Championship Standings</h2>
 
@@ -123,7 +118,6 @@
 
 </div>
 
-<!-- JS -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
@@ -134,7 +128,6 @@ const raceSelect = document.getElementById('raceSelect');
 const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
 let raceTable, champTable;
 
-/* ================= LOAD CSV ================= */
 function loadCSV(file, tableId, tableVar) {
   Papa.parse(file, {
     download: true,
@@ -172,17 +165,19 @@ function loadCSV(file, tableId, tableVar) {
       columns.forEach(col => $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`));
 
       tableVar = $(`#${tableId}`).DataTable({
-        data: data,
-        columns: columns,
+        data,
+        columns,
         paging: true,
         searching: true,
         responsive: true,
         scrollX: true,
         autoWidth: false,
+        columnDefs: [
+          { targets: -1, className: 'dt-right' } // ✅ Points a la derecha
+        ],
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
 
-      // 🔧 CLAVE: sincroniza cabecera y cuerpo
       tableVar.columns.adjust().responsive.recalc();
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -191,7 +186,6 @@ function loadCSV(file, tableId, tableVar) {
   });
 }
 
-/* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
   const response = await fetch('races.json');
   const json = await response.json();
@@ -208,12 +202,10 @@ async function loadRaceList() {
   }
 }
 
-/* ================= EVENTS ================= */
 raceSelect.addEventListener('change', () =>
   loadCSV(raceSelect.value, 'raceTable', raceTable)
 );
 
-/* ================= INIT ================= */
 loadRaceList();
 loadCSV(championshipCSV, 'champTable', null);
 </script>
