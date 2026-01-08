@@ -173,7 +173,7 @@ function loadCSV(file, tableId, tableVar) {
         scrollX: true,
         autoWidth: false,
         columnDefs: [
-          { targets: -1, className: 'dt-right' } // ✅ Points a la derecha
+          { targets: [-3, -2, -1], className: 'dt-right' } // ✅ Points a la derecha
         ],
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
