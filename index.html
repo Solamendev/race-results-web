@@ -30,6 +30,7 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
+    /* ✅ SCROLL HORIZONTAL CORRECTO */
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -52,25 +53,38 @@
       padding: 5px;
     }
 
+    /* ===== DESKTOP ONLY ===== */
     @media (min-width: 769px) {
-      body { background-attachment: fixed; }
+      body {
+        background-attachment: fixed;
+      }
     }
 
+    /* ===== MOBILE ===== */
     @media (max-width: 768px) {
-      .page { padding: 10px; }
-      .section { padding: 10px; margin-top: 20px; }
-      h1 { font-size: 1.4rem; }
-      h2 { font-size: 1.2rem; }
-      label, select {
+      .page {
+        padding: 10px;
+      }
+
+      .section {
+        padding: 10px;
+        margin-top: 20px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      label,
+      select {
         display: block;
         width: 100%;
         margin: 5px 0;
       }
-    }
-
-    table.dataTable th,
-    table.dataTable td {
-      vertical-align: middle;
     }
   </style>
 </head>
@@ -81,6 +95,7 @@
 
 <h1>/// GT3 Gen2 Racing Series Standings ///</h1>
 
+<!-- ================= RACES ================= -->
 <div class="section">
   <h2>Race Results</h2>
   <label for="raceSelect">Select event:</label>
@@ -94,6 +109,7 @@
   </div>
 </div>
 
+<!-- ================= CHAMPIONSHIP ================= -->
 <div class="section">
   <h2>Championship Standings</h2>
 
@@ -107,6 +123,7 @@
 
 </div>
 
+<!-- JS -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
@@ -117,6 +134,7 @@ const raceSelect = document.getElementById('raceSelect');
 const championshipCSV = 'season_results/championship_GT3_Season_2025.csv';
 let raceTable, champTable;
 
+/* ================= LOAD CSV ================= */
 function loadCSV(file, tableId, tableVar) {
   Papa.parse(file, {
     download: true,
@@ -131,11 +149,11 @@ function loadCSV(file, tableId, tableVar) {
       const columns = header.map(col => {
         if (col === "Position") {
           return [
-            { title: col, data: col, name: col },
+            { title: col, data: col },
             { title: col + '_sort', data: col + '_sort', visible: false }
           ];
         }
-        return { title: col, data: col, name: col };
+        return { title: col, data: col };
       }).flat();
 
       const data = dataRows.map(r => {
@@ -150,30 +168,21 @@ function loadCSV(file, tableId, tableVar) {
       });
 
       if (tableVar) tableVar.destroy();
-
       $(`#${tableId} thead`).empty().append('<tr></tr>');
       columns.forEach(col => $(`#${tableId} thead tr`).append(`<th>${col.title}</th>`));
 
       tableVar = $(`#${tableId}`).DataTable({
-        data,
-        columns,
+        data: data,
+        columns: columns,
         paging: true,
         searching: true,
         responsive: true,
         scrollX: true,
         autoWidth: false,
-
-        columnDefs: [
-          { name: 'Position', responsivePriority: 1 },
-          { name: 'Driver',   responsivePriority: 1 },
-          { name: 'Gap',      responsivePriority: 1 },
-          { name: 'Points',   responsivePriority: 1 },
-          { targets: '_all',  responsivePriority: 10 }
-        ],
-
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
 
+      // 🔧 CLAVE: sincroniza cabecera y cuerpo
       tableVar.columns.adjust().responsive.recalc();
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -182,6 +191,7 @@ function loadCSV(file, tableId, tableVar) {
   });
 }
 
+/* ================= LOAD RACES FROM JSON ================= */
 async function loadRaceList() {
   const response = await fetch('races.json');
   const json = await response.json();
@@ -198,10 +208,12 @@ async function loadRaceList() {
   }
 }
 
+/* ================= EVENTS ================= */
 raceSelect.addEventListener('change', () =>
   loadCSV(raceSelect.value, 'raceTable', raceTable)
 );
 
+/* ================= INIT ================= */
 loadRaceList();
 loadCSV(championshipCSV, 'champTable', null);
 </script>
