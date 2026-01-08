@@ -55,24 +55,6 @@
       padding: 5px;
     }
 
-    /* ===== DataTables alignment & style ===== */
-    table.dataTable th,
-    table.dataTable td {
-      vertical-align: middle;
-    }
-
-    /* Position column */
-    table.dataTable td:first-child {
-      font-weight: bold;
-      font-size: 1.05em;
-    }
-
-    /* Points column */
-    table.dataTable td:last-child {
-      font-weight: bold;
-      color: #c00;
-    }
-
     /* ===== DESKTOP ONLY ===== */
     @media (min-width: 769px) {
       body {
@@ -195,16 +177,6 @@ function loadCSV(file, tableId, tableVar) {
         searching: true,
         responsive: true,
         scrollX: true,
-        columnDefs: [
-          // Texto largo a la izquierda
-          { targets: [1, 3, 11], className: 'dt-left' },
-
-          // Tiempos y métricas centrados
-          { targets: [0, 4, 5, 6, 7, 8, 9], className: 'dt-center' },
-
-          // Numéricos cortos centrados
-          { targets: [10, 12, 13, 14], className: 'dt-center' }
-        ],
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
 
