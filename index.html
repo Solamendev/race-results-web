@@ -2,8 +2,6 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-
-  <!-- ✅ CRÍTICO PARA RESPONSIVE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>/// GT3 Gen2 Racing Series Standings ///</title>
@@ -32,9 +30,9 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
-    table {
+    /* ✅ SCROLL HORIZONTAL CORRECTO */
+    .table-wrapper {
       width: 100%;
-      display: block;
       overflow-x: auto;
     }
 
@@ -64,7 +62,6 @@
 
     /* ===== MOBILE ===== */
     @media (max-width: 768px) {
-
       .page {
         padding: 10px;
       }
@@ -104,20 +101,24 @@
   <label for="raceSelect">Select event:</label>
   <select id="raceSelect"></select>
 
-  <table id="raceTable" class="display nowrap">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table id="raceTable" class="display nowrap" style="width:100%">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ================= CHAMPIONSHIP ================= -->
 <div class="section">
   <h2>Championship Standings</h2>
 
-  <table id="champTable" class="display nowrap">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table id="champTable" class="display nowrap" style="width:100%">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 </div>
@@ -177,8 +178,12 @@ function loadCSV(file, tableId, tableVar) {
         searching: true,
         responsive: true,
         scrollX: true,
+        autoWidth: false,
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
+
+      // 🔧 CLAVE: sincroniza cabecera y cuerpo
+      tableVar.columns.adjust().responsive.recalc();
 
       if (tableId === 'raceTable') raceTable = tableVar;
       else champTable = tableVar;
