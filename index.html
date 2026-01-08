@@ -142,11 +142,11 @@ function loadCSV(file, tableId, tableVar) {
       const columns = header.map(col => {
         if (col === "Position") {
           return [
-            { title: col, data: col },
+            { title: col, data: col, name: col },
             { title: col + '_sort', data: col + '_sort', visible: false }
           ];
         }
-        return { title: col, data: col };
+        return { title: col, data: col, name: col };
       }).flat();
 
       const data = dataRows.map(r => {
@@ -173,7 +173,10 @@ function loadCSV(file, tableId, tableVar) {
         scrollX: true,
         autoWidth: false,
         columnDefs: [
-          { targets: [-3, -2, -1], className: 'dt-right' } // ✅ Points a la derecha
+          { name: 'Position', responsivePriority: 1 }, // siempre visible
+          { name: 'Driver', responsivePriority: 1 },   // siempre visible
+          { name: 'Points', responsivePriority: 1, className: 'dt-right' }, // siempre visible y derecha
+          { targets: '_all', responsivePriority: 10 }  // resto prioridades bajas
         ],
         order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
