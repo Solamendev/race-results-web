@@ -2,9 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+
+  <!-- ✅ CRÍTICO PARA RESPONSIVE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>/// GT3 Gen2 Racing Series Standings ///</title>
 
+  <!-- DataTables -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
   <style>
     body {
@@ -13,7 +19,7 @@
       background-image: url("Audi_R8_LMS_GT3_evo_II.jpg");
       background-size: cover;
       background-position: center;
-      background-attachment: fixed;
+      background-attachment: scroll;
     }
 
     h1, h2 {
@@ -28,7 +34,8 @@
 
     table {
       width: 100%;
-      margin-top: 20px;
+      display: block;
+      overflow-x: auto;
     }
 
     .section {
@@ -47,6 +54,41 @@
       margin-left: 10px;
       padding: 5px;
     }
+
+    /* ===== DESKTOP ONLY ===== */
+    @media (min-width: 769px) {
+      body {
+        background-attachment: fixed;
+      }
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 768px) {
+
+      .page {
+        padding: 10px;
+      }
+
+      .section {
+        padding: 10px;
+        margin-top: 20px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      label,
+      select {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
   </style>
 </head>
 
@@ -62,7 +104,7 @@
   <label for="raceSelect">Select event:</label>
   <select id="raceSelect"></select>
 
-  <table id="raceTable" class="display">
+  <table id="raceTable" class="display nowrap">
     <thead></thead>
     <tbody></tbody>
   </table>
@@ -72,7 +114,7 @@
 <div class="section">
   <h2>Championship Standings</h2>
 
-  <table id="champTable" class="display">
+  <table id="champTable" class="display nowrap">
     <thead></thead>
     <tbody></tbody>
   </table>
@@ -80,8 +122,10 @@
 
 </div>
 
+<!-- JS -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
@@ -101,12 +145,11 @@ function loadCSV(file, tableId, tableVar) {
       const header = rows[1];
       const dataRows = rows.slice(2);
 
-      // Generar columnas y datos
       const columns = header.map(col => {
-        if(col === "Position") {
+        if (col === "Position") {
           return [
             { title: col, data: col },
-            { title: col+'_sort', data: col+'_sort', visible: false }
+            { title: col + '_sort', data: col + '_sort', visible: false }
           ];
         }
         return { title: col, data: col };
@@ -114,10 +157,10 @@ function loadCSV(file, tableId, tableVar) {
 
       const data = dataRows.map(r => {
         const obj = {};
-        header.forEach((col,i) => {
+        header.forEach((col, i) => {
           obj[col] = r[i] || '';
-          if(col === "Position") {
-            obj[col+'_sort'] = (r[i] && r[i] !== 'DNF') ? parseInt(r[i]) : 999;
+          if (col === "Position") {
+            obj[col + '_sort'] = (r[i] && r[i] !== 'DNF') ? parseInt(r[i]) : 999;
           }
         });
         return obj;
@@ -132,7 +175,9 @@ function loadCSV(file, tableId, tableVar) {
         columns: columns,
         paging: true,
         searching: true,
-        order: [[columns.findIndex(c => c.data === 'Position_sort'),'asc']]
+        responsive: true,
+        scrollX: true,
+        order: [[columns.findIndex(c => c.data === 'Position_sort'), 'asc']]
       });
 
       if (tableId === 'raceTable') raceTable = tableVar;
@@ -159,7 +204,9 @@ async function loadRaceList() {
 }
 
 /* ================= EVENTS ================= */
-raceSelect.addEventListener('change', () => loadCSV(raceSelect.value, 'raceTable', raceTable));
+raceSelect.addEventListener('change', () =>
+  loadCSV(raceSelect.value, 'raceTable', raceTable)
+);
 
 /* ================= INIT ================= */
 loadRaceList();
